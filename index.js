@@ -51,10 +51,14 @@ app.post('/login', (req, res) => {
   UsersModel.findOne({ email: req.body.email })
     .then(userFound => {
       console.log(userFound)
-      if (userFound.password === req.body.password) {
+      if (!userFound) {
+        return res.status(404).send('User Not found')
+      }
+
+      if (userFound && userFound.password === req.body.password) {
         res.status(200).send('user is good to go')
       } else {
-        res.status(400).send('User not authenticated')
+        res.status(404).send('User not authenticated')
       }
     })
 
