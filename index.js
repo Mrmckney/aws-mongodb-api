@@ -1,56 +1,62 @@
+require('dotenv/config')
 const express = require('express')
 const cors = require('cors')
-require('dotenv/config')
 const mongoose = require('mongoose')
 
 const app = express()
-
 app.use(cors())
 app.use(express.json())
 
 mongoose
-    .connect(process.env.DB_CONNECTION , {
-        useNewUrlParser: true, 
-        useUnifiedTopology: true, 
-        useFindAndModify: false,
+  .connect(process.env.DB_CONNECTION, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+  })
+  .then(() => {
+    app.listen('5000', () => {
+      console.log('our app is listening on port 5000')
     })
-    .then(() => {
-        app.listen('5000', () => {
-            console.log('our app is listening on port 5000')} 
-        )  
-    })
-    .catch(err => console.log(err))
+  })
+  .catch(err => console.log(err))
 
-const UserSchema = mongoose.Schema({
+const UserSchema = mongoose.Schema(
+  {
     fname: { type: String, required: true },
     lname: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
-    }, 
-    { timestamps: true }
+  },
+  { timestamps: true }
 )
 
 const UsersModel = mongoose.model('Users', UserSchema)
 
-
 app.get('/users', (req, res) => {
-    UsersModel.find()
-    .then(allUsers => {
-        res.status(200).send(allUsers)
-    })
+  UsersModel.find()
+    .then(allUsers => res.status(200).send(allUsers))
+    .then(() => console.log('all users sent'))
     .catch(err => console.log(err))
-
 })
 
 app.post('/users', (req, res) => {
-    new UsersModel(req.body)
+  console.log('this is req body', req.body)
+  new UsersModel(req.body)
     .save()
     .then(() => res.status(200).send('User has been created'))
     .catch(err => console.log(err))
 })
 
-app.post('/login', () => {
-    UsersModel.findOne({email: req.params})
-    .then(userFound => res.status(200).send(userFound))
+app.post('/login', (req, res) => {
+  UsersModel.findOne({ email: req.body.email })
+    .then(userFound => {
+      console.log(userFound)
+      if (userFound.password === req.body.password) {
+        res.status(200).send('user is good to go')
+      } else {
+        res.status(400).send('User not authenticated')
+      }
+    })
+
     .catch(err => console.log(err))
 })
