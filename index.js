@@ -43,7 +43,10 @@ app.post('/users', (req, res) => {
   console.log('this is req body', req.body)
   new UsersModel(req.body)
     .save()
-    .then(() => res.status(200).send('User has been created'))
+    .then(() => {
+      UsersModel.findOne({email: req.body.email})
+      .then(foundUser => res.send(foundUser))
+    })
     .catch(err => console.log(err))
 })
 
