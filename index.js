@@ -50,11 +50,20 @@ app.post('/users', (req, res) => {
     .catch(err => console.log(err))
 })
 
-app.post('/login', (req, res) => {
+app.post("/login", (req, res) => {
   UsersModel.findOne({ email: req.body.email })
-  UsersModel.findOne({ password: req.body.password })
-    .then(userFound => {
-      res.send(userFound)
+    .then((userFound) => {
+      console.log(userFound)
+      if (!userFound || userFound.password !== req.body.password) {
+        return res
+          .status(404)
+          .send("Login Attempt failed: User not found or incorrect password.")
+      }
+      if (userFound && userFound.password === req.body.password) {
+        res.status(200).send(userFound)
+      } else {
+        res.status(401).send("Login Attempt failed.")
+      }
     })
-    .catch(err => console.log(err))
+    .catch((err) => console.error(err))
 })
